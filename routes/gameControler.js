@@ -2,15 +2,17 @@
 var models = require('../models')
 var asyncLib = require('async');
 var jwtUtils = require('../utils/jwt.utils');
-//constants
+var sequelize = require("sequelize");
 
+//constants
+const Op = sequelize.Op.ne;
 //routes
 module.exports = {
     createGame: function (req, res) {
         //getting auth header
         var headerAuth = req.headers['authorization'];
         var playerId = jwtUtils.getUserId(headerAuth);
-        var color = Math.floor(Math.random()) % 2;
+        var color = Math.floor(Math.random() * 10) % 2;
 
 
         asyncLib.waterfall([
@@ -28,7 +30,7 @@ module.exports = {
                     if (playerFound) {
                         models.Game.create({
                             state: 0,
-                            PlayerId: color === 0 ? playerFound.id : null
+                            idPLAYER: color === 0 ? playerFound.id : null
                         }).then(function (newGame) {
                             done(null, newGame, playerFound);
                         }).catch(function (err) {
@@ -41,24 +43,23 @@ module.exports = {
 
                 function (newGame, playerFound, done) {
                     if (newGame) {
-                        if (newGame.PlayerId) {
-                            var values = {
-                                idGAME: newGame.id,
-                                color: color
-                            };
 
-                            var where = {
-                                where: {id: playerFound.id}
-                            };
-                            playerFound.update(values, where)
-                                .then(function () {
-                                    done(newGame);
-                                }).catch(function (err) {
-                                res.status(500).json({'error': err.message});
-                            })
-                        } else {
-                            done(newGame);
-                        }
+                        var values = {
+                            idGAME: newGame.id,
+                            color: color,
+                            score: 0
+                        };
+
+                        var where = {
+                            where: {id: playerFound.id}
+                        };
+                        playerFound.update(values, where)
+                            .then(function () {
+                                done(newGame);
+                            }).catch(function (err) {
+                            res.status(500).json({'error': err.message});
+                        })
+
                     } else {
                         return res.status(500).json({'error': 'cannot create game'});
                     }
@@ -94,6 +95,7 @@ module.exports = {
                     if (playerFound) {
                         if (!playerFound.idGAME) {
                             models.Game.findOne({
+                                attributes: ['state', 'idPLAYER'],
                                 where: {id: idGame}
                             }).then(function (gameFound) {
                                 done(null, playerFound, gameFound);
@@ -108,18 +110,18 @@ module.exports = {
 
                 function (playerFound, gameFound, done) {
                     if (gameFound) {
-                        if (gameFound.state == 0) {
+                        if (gameFound.state === 0) {
+                            console.log(gameFound.idPLAYER == null ? playerFound.id : gameFound.idPLAYER);
                             var values = {
-                                PlayerId: gameFound.PlayerId === null ? gameFound.playerId : playerFound.id,
+                                idPLAYER: gameFound.idPLAYER == null ? playerFound.id : gameFound.idPLAYER,
                                 state: 1,
-                                color: (gameFound.color + 1) % 2
                             };
 
                             var where = {
                                 where: {
                                     id: idGame
                                 }
-                            }
+                            };
                             models.Game.update(values, where)
                                 .then(function () {
                                     done(null, playerFound, gameFound);
@@ -127,14 +129,16 @@ module.exports = {
                                 res.status(500).json({'error': err.message});
                             })
                         } else
-                            res.status(404).json({'error': 'cannot find this game'});
+                            res.status(404).json({'error': 'the game is full'});
                     } else
-                        res.status(405).json({'error' : 'the game is full'});
+                        res.status(405).json({'error': 'cannot find this game'});
                 },
 
                 function (playerFound, gameFound, done) {
                     var values = {
-                        idGAME: gameFound.id
+                        idGAME: gameFound.id,
+                        color: (gameFound.color + 1) % 2,
+                        score: 0
                     };
 
                     var where = {
@@ -179,38 +183,62 @@ module.exports = {
         const headerAuth = req.headers['authorization'];
         const playerId = jwtUtils.getUserId(headerAuth);
 
-        var idGame = req.query.idGame;
-
         asyncLib.waterfall([
-            function (done) {
-                models.Game.findOne({
-                    id: idGame
-                }).then(function (gameFound) {
-                    done(null, gameFound);
-                }).catch(function (err) {
-                    res.status(500).json({'error': err.message});
-                })
-            },
-
-            function (gameFound, done) {
-                if (gameFound) {
+                function (done) {
                     models.Player.findOne({
-                        attributes: ['pseudo', 'score', 'victory', 'defeat'],
-                        where: {idGAME: idGame, $id: playerId}
+                        attributes: ['idGAME'],
+                        where:{id: playerId}
                     }).then(function (playerFound) {
-                        done(null, gameFound, playerFound);
-                    }).catch(function (err) {
-                        res.status(500).json({'error': err.message});
-                    })
-                } else
-                    res.status(404).json({'error': 'cannot find game'});
-            },
+                        done(null, playerFound)
+                    }) 
+                },
 
-            function (gameFound, playerFound, done) {
-                if (playerFound) {
-                    models.Pawn.findAll()
-                }
-            }
-        ]);
+                function (playerFound, done) {
+                    if (playerFound) {
+                        models.Game.findOne({
+                            attributes: ['id', 'idPLAYER'],
+                            where: {id: playerFound.idGAME}
+                        }).then(function (gameFound) {
+                            done(null, gameFound);
+                        }).catch(function (err) {
+                            res.status(500).json({'error': err.message});
+                        })
+                    } else 
+                        res.status(404).json({'error' : 'cannot find player'})
+                },
+
+                function (gameFound, done) {
+                    if (gameFound) {
+                        models.Player.findOne({
+                            attributes: ['pseudo', 'score', 'victory', 'defeat'],
+                            where: {
+                                idGAME: idGame,
+                                id: {[Op]: playerId}
+                            }
+                        }).then(function (opponentFound) {
+                            done(null, gameFound, opponentFound);
+                        }).catch(function (err) {
+                            res.status(500).json({'error': err.message});
+                        })
+                    } else
+                        res.status(404).json({'error': 'cannot find game'});
+                },
+
+                function (gameFound, opponentFound, done) {
+                    if (opponentFound) {
+                        models.Pawn.findAll({
+                            attributes: ['id', 'colomn', 'height', 'idPlayer'],
+                            where: {idGAME: idGame}
+                        }).then(function (pawnFound) {
+                            done(gameFound, opponentFound, pawnFound);
+                        }).catch(function (err) {
+                            res.status(500).json({'error': err.message});
+                        })
+                    } else
+                        res.status(404).json({'error': 'cannot find player'});
+                }],
+            function (gameFound, playerFound, pawnFoud) {
+                res.status(200).json({'game': gameFound, 'opponent': playerFound, 'pawns': pawnFoud});
+            });
     }
 }

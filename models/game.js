@@ -19,7 +19,7 @@ module.exports = (sequelize, DataTypes) => {
     }
   };
   Game.init({
-    //idPlayer: DataTypes.INTEGER,
+    idPLAYER: DataTypes.INTEGER,
     state: DataTypes.INTEGER
   }, {
     sequelize,

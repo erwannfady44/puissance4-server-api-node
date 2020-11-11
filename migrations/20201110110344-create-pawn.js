@@ -8,13 +8,17 @@ module.exports = {
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      idGame: {
+      idGAME: {
         allowNull: false,
         type: Sequelize.INTEGER
       },
-      idPlayer: {
+      idPLAYER: {
         allowNull: false,
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
+        references: {
+          model:'Players',
+          key:'id'
+        }
       },
       colomn: {
         allowNull: false,

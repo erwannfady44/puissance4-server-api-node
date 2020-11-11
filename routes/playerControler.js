@@ -166,6 +166,9 @@ module.exports = {
     consult: function (req, res) {
         var idPlayer = req.query.idPlayer;
 
+        if (!idPlayer)
+            res.status(404).json({'error' : 'missing argument'});
+
         models.Player.findOne({
             attributes: ['idGAME', 'pseudo', 'score', 'victory', 'defeat'],
             where: {id: idPlayer}

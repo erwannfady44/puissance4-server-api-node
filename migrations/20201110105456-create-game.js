@@ -8,13 +8,9 @@ module.exports = {
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      playerId: {
+      idPLAYER: {
         allowNull: true,
         type: Sequelize.INTEGER,
-        /*references: {
-          model:'Players',
-          key:'id'
-        }*/
       },
       state: {
         allowNull: false,
