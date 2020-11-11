@@ -11,12 +11,14 @@ exports.router = (function () {
     apiRouter.route('/players/register').post(playerControler.register);
     apiRouter.route('/players/login').post(playerControler.login);
     apiRouter.route('/players/me').get(playerControler.getPlayerProfile);
+    apiRouter.route('/players/consult').get(playerControler.consult);
     apiRouter.route('/players/update').put(playerControler.updateUserProfile);
 
     //game routes
     apiRouter.route('/games/create').post(gameControler.createGame);
     apiRouter.route('/games/join').post(gameControler.joinGame);
     apiRouter.route('/games/waiting').get(gameControler.waitingGames);
+    apiRouter.route('/games/consult').get(gameControler.consult);
 
     return apiRouter;
 })();

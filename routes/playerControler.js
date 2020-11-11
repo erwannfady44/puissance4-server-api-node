@@ -16,47 +16,48 @@ module.exports = {
         }
 
         asyncLib.waterfall([
-            function (done) {
-                models.Player.findOne({
-                    attributes: ['pseudo'],
-                    where: {pseudo: pseudo}
-                })
-                    .then(function (playerFound) {
-                        done(null, playerFound)
-                    }).catch(function (err) {
-                    return res.status(500).json({'error': "err.message"})
-                })
-            },
-
-            function (playerFound, done) {
-                if (!playerFound) {
-                    bcrypt.hash(password, 5, function (err, bcryptPassword) {
-                        done(null, playerFound, bcryptPassword)
-                    });
-                } else {
-                    return res.status(409).json({'error': 'player already existe'});
-                }
-            },
-
-            function (playerFound, bcryptPassword, done) {
-                var newPlayer = models.Player.create({
-                    pseudo: pseudo,
-                    password: bcryptPassword,
-                    defeat: 0,
-                    victory: 0
-                })
-                    .then(function (newPlayer) {
-                        done(newPlayer);
+                function (done) {
+                    models.Player.findOne({
+                        attributes: ['pseudo'],
+                        where: {pseudo: pseudo}
                     })
-                    .catch(function (err) {
-                        return res.status(500).json({'error': err.message});
+                        .then(function (playerFound) {
+                            done(null, playerFound)
+                        }).catch(function (err) {
+                        return res.status(500).json({'error': "err.message"})
                     })
-            }],
+                },
+
+                function (playerFound, done) {
+                    if (!playerFound) {
+                        bcrypt.hash(password, 5, function (err, bcryptPassword) {
+                            done(null, playerFound, bcryptPassword)
+                        });
+                    } else {
+                        return res.status(409).json({'error': 'player already existe'});
+                    }
+                },
+
+                function (playerFound, bcryptPassword, done) {
+                    var newPlayer = models.Player.create({
+                        pseudo: pseudo,
+                        password: bcryptPassword,
+                        defeat: 0,
+                        victory: 0
+                    })
+                        .then(function (newPlayer) {
+                            done(newPlayer);
+                        })
+                        .catch(function (err) {
+                            return res.status(500).json({'error': err.message});
+                        })
+                }],
 
             function (newPlayer) {
                 if (newPlayer) {
                     return res.status(201).json({
-                        'playerId': newPlayer.id
+                        'playerId': newPlayer.id,
+                        'token': jwtUtils.generateTokenForUser(newPlayer)
                     });
                 } else {
                     return res.status(500).json({'error': err.message});
@@ -70,26 +71,26 @@ module.exports = {
         var password = req.body.password;
 
         asyncLib.waterfall([
-            function (done) {
-                models.Player.findOne({
-                    where: {pseudo: pseudo}
-                })
-                    .then(function (playerFound) {
-                        done(null, playerFound);
-                    }).catch(function (err) {
-                    return res.status(404).json({'error': 'user doesn\'t existe'});
-                })
-            },
-
-            function (playerFound, done) {
-                if (playerFound) {
-                    bcrypt.compare(password, playerFound.password, function (err, bcryptPassword) {
-                        done(playerFound, bcryptPassword);
+                function (done) {
+                    models.Player.findOne({
+                        where: {pseudo: pseudo}
                     })
-                } else {
-                    return res.status(409).json({'error': 'wrong password'});
-                }
-            }],
+                        .then(function (playerFound) {
+                            done(null, playerFound);
+                        }).catch(function (err) {
+                        return res.status(404).json({'error': 'user doesn\'t existe'});
+                    })
+                },
+
+                function (playerFound, done) {
+                    if (playerFound) {
+                        bcrypt.compare(password, playerFound.password, function (err, bcryptPassword) {
+                            done(playerFound, bcryptPassword);
+                        })
+                    } else {
+                        return res.status(409).json({'error': 'wrong password'});
+                    }
+                }],
 
             function (playerFound, bcryptPassword) {
                 if (bcryptPassword) {
@@ -111,7 +112,7 @@ module.exports = {
             return res.status(400).json({'error': 'wrong token'});
 
         models.Player.findOne({
-            attributes: ['id', 'pseudo', 'score', 'victory', 'defeat', 'idGAME'],
+            attributes: ['id', 'pseudo', 'color', 'score', 'victory', 'defeat', 'idGAME'],
             where: {id: playerId}
         }).then(function (player) {
             if (player)
@@ -130,36 +131,51 @@ module.exports = {
         var idGame = req.body.idGame;
 
         asyncLib.waterfall([
-            function (done) {
-                models.Player.findOne({
-                    attributes: ['id', 'pseudo', 'score', 'victory', 'defeat', 'idGAME', 'firstPlayer'],
-                    where: {id: playerId}
-                }).then(function (playerFound) {
-                    done(null, playerFound);
-                }).catch(function (err) {
-                    return res.status(500).json({ 'error' : err.message});
-                })
-            },
-
-            function (playerFound, done) {
-                if (playerFound, done) {
-                    playerFound.update({
-                        idGAME: (idGame)
-                    }).then(function () {
-                        done(playerFound);
+                function (done) {
+                    models.Player.findOne({
+                        attributes: ['id', 'pseudo', 'color', 'score', 'victory', 'defeat', 'idGAME', 'firstPlayer'],
+                        where: {id: playerId}
+                    }).then(function (playerFound) {
+                        done(null, playerFound);
                     }).catch(function (err) {
-                        res.status(500).json({ 'error' : err.message});
-                    });
-                } else
-                    return res.status(404).json({ 'error' : 'player not found' });
-            }],
+                        return res.status(500).json({'error': err.message});
+                    })
+                },
+
+                function (playerFound, done) {
+                    if (playerFound, done) {
+                        playerFound.update({
+                            idGAME: (idGame)
+                        }).then(function () {
+                            done(playerFound);
+                        }).catch(function (err) {
+                            res.status(500).json({'error': err.message});
+                        });
+                    } else
+                        return res.status(404).json({'error': 'player not found'});
+                }],
 
             function (playerFound) {
                 if (playerFound)
                     return res.status(201).json(playerFound);
                 else
-                    return res.status(500).json({ 'error' : 'cannot update player profile'});
+                    return res.status(500).json({'error': 'cannot update player profile'});
             }
         );
+    },
+    consult: function (req, res) {
+        var idPlayer = req.query.idPlayer;
+
+        models.Player.findOne({
+            attributes: ['idGAME', 'pseudo', 'score', 'victory', 'defeat'],
+            where: {id: idPlayer}
+        }).then(function (playerFound) {
+            if (playerFound)
+                return res.status(201).json(playerFound);
+            else
+                return res.status(404).json({'error': 'cannot find player'});
+        }).catch(function (err) {
+            res.status(500).json({'error': err.message});
+        });
     }
 }

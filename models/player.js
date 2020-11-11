@@ -19,6 +19,7 @@ module.exports = (sequelize, DataTypes) => {
     idGAME: DataTypes.INTEGER,
     pseudo: DataTypes.STRING,
     password: DataTypes.STRING,
+    color: DataTypes.INTEGER,
     score: DataTypes.INTEGER,
     victory: DataTypes.INTEGER,
     defeat: DataTypes.INTEGER,
