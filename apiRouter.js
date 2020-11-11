@@ -1,15 +1,21 @@
 //Imports
 var express = require('express');
-var playerControler = require('./routes/playerControle');
+var playerControler = require('./routes/playerControler');
+var gameControler = require('./routes/gameControler');
 
 //Router
 exports.router = (function () {
     var apiRouter = express.Router();
 
-    apiRouter.route('/player/register').post(playerControler.register);
-    apiRouter.route('/player/login').post(playerControler.login);
-    apiRouter.route('/user/me').get(playerControler.getPlayerProfile);
-    apiRouter.route('/user/update').put(playerControler.updateUserProfile);
+    //player routes
+    apiRouter.route('/players/register').post(playerControler.register);
+    apiRouter.route('/players/login').post(playerControler.login);
+    apiRouter.route('/players/me').get(playerControler.getPlayerProfile);
+    apiRouter.route('/players/update').put(playerControler.updateUserProfile);
+
+    //game routes
+    apiRouter.route('/games/create').post(gameControler.createGame);
+    apiRouter.route('/games/waiting').get(gameControler.waitingGames);
 
     return apiRouter;
 })();

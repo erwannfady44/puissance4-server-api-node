@@ -22,7 +22,6 @@ module.exports = (sequelize, DataTypes) => {
     score: DataTypes.INTEGER,
     victory: DataTypes.INTEGER,
     defeat: DataTypes.INTEGER,
-    firstPlayer: DataTypes.INTEGER
   }, {
     sequelize,
     modelName: 'Player',

@@ -30,7 +30,7 @@ module.exports = {
                     playerId = jwtToken.playerId;
                 }
             } catch (e) {
-                e.message
+                console.log(e.message);
             }
         }
         return playerId;

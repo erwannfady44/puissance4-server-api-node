@@ -46,12 +46,12 @@ module.exports = {
                     victory: 0
                 })
                     .then(function (newPlayer) {
-                        done(null, newPlayer);
+                        done(newPlayer);
                     })
                     .catch(function (err) {
                         return res.status(500).json({'error': err.message});
                     })
-            },
+            }],
 
             function (newPlayer) {
                 if (newPlayer) {
@@ -62,7 +62,7 @@ module.exports = {
                     return res.status(500).json({'error': err.message});
                 }
             }
-        ]);
+        );
     },
 
     login: function (req, res) {
@@ -84,12 +84,12 @@ module.exports = {
             function (playerFound, done) {
                 if (playerFound) {
                     bcrypt.compare(password, playerFound.password, function (err, bcryptPassword) {
-                        done(null, playerFound, bcryptPassword);
+                        done(playerFound, bcryptPassword);
                     })
                 } else {
                     return res.status(409).json({'error': 'player already existe'});
                 }
-            },
+            }],
 
             function (playerFound, bcryptPassword) {
                 if (bcryptPassword) {
@@ -99,7 +99,7 @@ module.exports = {
                     });
                 }
             }
-        ]);
+        );
     },
 
     getPlayerProfile: function (req, res) {
@@ -111,7 +111,7 @@ module.exports = {
             return res.status(400).json({'error': 'wrong token'});
 
         models.Player.findOne({
-            attributes: ['id', 'pseudo', 'score', 'victory', 'defeat', 'idGAME', 'firstPlayer'],
+            attributes: ['id', 'pseudo', 'score', 'victory', 'defeat', 'idGAME'],
             where: {id: playerId}
         }).then(function (player) {
             if (player)
@@ -146,13 +146,13 @@ module.exports = {
                     playerFound.update({
                         idGAME: (idGame)
                     }).then(function () {
-                        done(null, playerFound);
+                        done(playerFound);
                     }).catch(function (err) {
                         res.status(500).json({ 'error' : err.message});
                     });
                 } else
                     return res.status(404).json({ 'error' : 'player not found' });
-            },
+            }],
 
             function (playerFound) {
                 if (playerFound)
@@ -160,6 +160,6 @@ module.exports = {
                 else
                     return res.status(500).json({ 'error' : 'cannot update player profile'});
             }
-        ]);
+        );
     }
 }

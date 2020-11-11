@@ -13,14 +13,13 @@ module.exports = (sequelize, DataTypes) => {
         // define association here
         Game.belongsTo(models.Player, {
             foreignKey: {
-                allowNull:false
+                allowNull:true
             }
         })
     }
-
   };
   Game.init({
-    idPlayer: DataTypes.INTEGER,
+    //idPlayer: DataTypes.INTEGER,
     state: DataTypes.INTEGER
   }, {
     sequelize,
