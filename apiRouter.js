@@ -8,6 +8,8 @@ exports.router = (function () {
 
     apiRouter.route('/player/register').post(playerControler.register);
     apiRouter.route('/player/login').post(playerControler.login);
+    apiRouter.route('/user/me').get(playerControler.getPlayerProfile);
+    apiRouter.route('/user/update').put(playerControler.updateUserProfile);
 
     return apiRouter;
 })();

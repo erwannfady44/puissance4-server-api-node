@@ -5,12 +5,34 @@ const JWT_SIGN_SECRET = 'MEj7ZHatGtZNsu7jwU6rzw5g8vD3L66Vx8B994rAaYUh43yh86LGsN3
 module.exports = {
     generateTokenForUser: function (userData) {
         return jwt.sign({
-                userId: userData.id,
+                playerId: userData.id,
                 pseudo: userData.pseudo
             },
             JWT_SIGN_SECRET,
             {
                 expiresIn: '3h'
             })
+    },
+
+    parseAuthorization: function (authorization) {
+        return (authorization != null) ? authorization.replace('Bearer ', '') : null;
+    },
+
+    getUserId: function (authorization) {
+        var playerId = -1;
+        var token = module.exports.parseAuthorization(authorization);
+
+        if (token != null) {
+            try {
+                var jwtToken = jwt.verify(token, JWT_SIGN_SECRET);
+
+                if (jwtToken != null) {
+                    playerId = jwtToken.playerId;
+                }
+            } catch (e) {
+                e.message
+            }
+        }
+        return playerId;
     }
 }
