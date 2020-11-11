@@ -15,6 +15,7 @@ exports.router = (function () {
 
     //game routes
     apiRouter.route('/games/create').post(gameControler.createGame);
+    apiRouter.route('/games/join').post(gameControler.joinGame);
     apiRouter.route('/games/waiting').get(gameControler.waitingGames);
 
     return apiRouter;

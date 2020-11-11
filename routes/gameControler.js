@@ -12,7 +12,6 @@ module.exports = {
         var playerId = jwtUtils.getUserId(headerAuth);
         var idPlayerGame = Math.floor(Math.random()) % 2;
 
-        var player = null;
 
         asyncLib.waterfall([
                 function (done) {
@@ -27,24 +26,23 @@ module.exports = {
 
                 function (playerFound, done) {
                     if (playerFound) {
-                        player = playerFound;
                         models.Game.create({
                             state: 0,
                             PlayerId: idPlayerGame === 0 ? playerFound.id : null
                         }).then(function (newGame) {
-                            done(null, newGame);
+                            done(null, newGame, playerFound);
                         }).catch(function (err) {
-                            res.status(500).json({'error' : err.message});
+                            res.status(500).json({'error': err.message});
                         })
                     } else {
                         res.status(404).json({'error': 'player not found'});
                     }
                 },
 
-                function (newGame, done) {
+                function (newGame, playerFound, done) {
                     if (newGame) {
                         if (newGame.PlayerId) {
-                            player.update({
+                            playerFound.update({
                                 idGAME: newGame.id
                             }).then(function () {
                                 done(newGame);
@@ -63,12 +61,93 @@ module.exports = {
                 if (newGame)
                     return res.status(201).json(newGame);
                 else
-                    return res.status(500).json({'error' : 'cannot create game'});
+                    return res.status(500).json({'error': 'cannot create game'});
             }
         );
     },
 
-    waitingGames: function(res) {
+    joinGame: function (req, res) {
+        const headerAuth = req.headers['authorization'];
+        const playerId = jwtUtils.getUserId(headerAuth);
+
+        const idGame = req.body.idGame;
+
+        asyncLib.waterfall([
+                function (done) {
+                    models.Player.findOne({
+                        where: {id: playerId}
+                    }).then(function (playerFound) {
+                        done(null, playerFound);
+                    }).catch(function (err) {
+                        res.status(500).json({'error': err.message});
+                    })
+                },
+
+                function (playerFound, done) {
+                    if (playerFound) {
+                        if (!playerFound.idGAME) {
+                            models.Game.findOne({
+                                where: {id: idGame}
+                            }).then(function (gameFound) {
+                                done(null, playerFound, gameFound);
+                            }).catch(function (err) {
+                                res.status(404).json({'error': err.message});
+                            })
+                        } else
+                            res.status(401).json({'error': 'you are already in game'});
+                    } else
+                        res.status(404).json({'error': 'cannot find player'});
+                },
+
+                function (playerFound, gameFound, done) {
+                    if (gameFound, done) {
+                        var values = {
+                            PlayerId: gameFound.PlayerId === null ? gameFound.playerId : playerFound.id,
+                            state: 1
+                        };
+
+                        var where = {
+                            where: {
+                                id: idGame
+                            }
+                        }
+                        models.Game.update(values, where)
+                            .then(function () {
+                                done(null, playerFound, gameFound);
+                            }).catch(function (err) {
+                            res.status(500).json({'error': err.message});
+                        })
+                    } else
+                        res.status(404).json({'error': 'cannot find the game'});
+                },
+
+                function (playerFound, gameFound, done) {
+                    var values = {
+                        idGAME: gameFound.id
+                    };
+
+                    var where = {
+                        where: {id: playerFound.id}
+                    };
+                    models.Player.update(values, where)
+                        .then(function () {
+                        done(gameFound);
+                    }).catch(function (err) {
+                        res.status(500).json({'error': err.message});
+                    })
+                }
+            ],
+
+            function (gameFound) {
+                if (gameFound)
+                    return res.status(201).json(gameFound);
+                else
+                    return res.status(500).json({'error': 'cannot join the game'});
+            }
+        );
+    },
+
+    waitingGames: function (res) {
         models.Game.findAll({
             state: 0,
             include: [{
@@ -79,9 +158,9 @@ module.exports = {
             if (games) {
                 res.status(200).json(games);
             } else
-                res.status(404).json({'error' : 'no game found'});
+                res.status(404).json({'error': 'no game found'});
         }).catch(function (err) {
-            res.status(500).json({'error' : err.message});
+            res.status(500).json({'error': err.message});
         })
     }
 }

@@ -87,7 +87,7 @@ module.exports = {
                         done(playerFound, bcryptPassword);
                     })
                 } else {
-                    return res.status(409).json({'error': 'player already existe'});
+                    return res.status(409).json({'error': 'wrong password'});
                 }
             }],
 
