@@ -11,15 +11,12 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
-      models.Player.hasMany(models.Game);
-      models.Player.hasMany(models.Pawn);
+      models.Player.hasMany(models.Pawns);
     }
   };
   Player.init({
-    idGAME: DataTypes.INTEGER,
     pseudo: DataTypes.STRING,
     password: DataTypes.STRING,
-    color: DataTypes.INTEGER,
     score: DataTypes.INTEGER,
     victory: DataTypes.INTEGER,
     defeat: DataTypes.INTEGER,

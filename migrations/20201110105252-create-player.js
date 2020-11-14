@@ -8,10 +8,6 @@ module.exports = {
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      idGAME: {
-        allowNull: true,
-        type: Sequelize.INTEGER
-      },
       pseudo: {
         allowNull: false,
         type: Sequelize.STRING
@@ -19,10 +15,6 @@ module.exports = {
       password: {
         allowNull: false,
         type: Sequelize.STRING
-      },
-      color: {
-        allowNull: true,
-        type: Sequelize.INTEGER
       },
       score: {
         allowNull: true,

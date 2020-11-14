@@ -8,7 +8,15 @@ module.exports = {
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      idPLAYER: {
+      idPLAYER1: {
+        allowNull : true,
+        type: Sequelize.INTEGER
+      },
+      idPLAYER2: {
+        allowNull : true,
+        type: Sequelize.INTEGER
+      },
+      turn: {
         allowNull: true,
         type: Sequelize.INTEGER,
       },

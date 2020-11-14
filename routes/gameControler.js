@@ -12,7 +12,7 @@ module.exports = {
         //getting auth header
         var headerAuth = req.headers['authorization'];
         var playerId = jwtUtils.getUserId(headerAuth);
-        var color = Math.floor(Math.random() * 10) % 2;
+        var turn = Math.floor(Math.random() * 10) % 2;
 
 
         asyncLib.waterfall([
@@ -30,7 +30,8 @@ module.exports = {
                     if (playerFound) {
                         models.Game.create({
                             state: 0,
-                            idPLAYER: color === 0 ? playerFound.id : null
+                            idPLAYER1 : playerFound.id,
+                            turn: turn
                         }).then(function (newGame) {
                             done(null, newGame, playerFound);
                         }).catch(function (err) {
@@ -45,8 +46,6 @@ module.exports = {
                     if (newGame) {
 
                         var values = {
-                            idGAME: newGame.id,
-                            color: color,
                             score: 0
                         };
 
@@ -93,17 +92,14 @@ module.exports = {
 
                 function (playerFound, done) {
                     if (playerFound) {
-                        if (!playerFound.idGAME) {
                             models.Game.findOne({
-                                attributes: ['state', 'idPLAYER'],
+                                attributes: ['state', 'turn'],
                                 where: {id: idGame}
                             }).then(function (gameFound) {
                                 done(null, playerFound, gameFound);
                             }).catch(function (err) {
                                 res.status(500).json({'error': err.message});
                             })
-                        } else
-                            res.status(401).json({'error': 'you are already in game'});
                     } else
                         res.status(404).json({'error': 'cannot find player'});
                 },
@@ -111,9 +107,8 @@ module.exports = {
                 function (playerFound, gameFound, done) {
                     if (gameFound) {
                         if (gameFound.state === 0) {
-                            console.log(gameFound.idPLAYER == null ? playerFound.id : gameFound.idPLAYER);
                             var values = {
-                                idPLAYER: gameFound.idPLAYER == null ? playerFound.id : gameFound.idPLAYER,
+                                idPLAYER2: playerFound.id,
                                 state: 1,
                             };
 
@@ -136,8 +131,6 @@ module.exports = {
 
                 function (playerFound, gameFound, done) {
                     var values = {
-                        idGAME: gameFound.id,
-                        color: (gameFound.color + 1) % 2,
                         score: 0
                     };
 

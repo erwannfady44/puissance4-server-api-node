@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="303cdd18-a0d2-464d-b6a3-cbf778f67274" name="serveur puissance4" url="http://192.168.0.161:8080">
+        <fileTransfer rootFolder="/home/freebox/server_puissance4" accessType="SFTP" host="192.168.0.161" port="22" sshConfigId="50136c24-4951-4218-be83-f5ceb4851de9" sshConfig="freebox@192.168.0.161:22 password">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" passiveMode="true" shareSSLContext="true" />
+          </advancedOptions>
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>

@@ -163,6 +163,7 @@ module.exports = {
             }
         );
     },
+
     consult: function (req, res) {
         var idPlayer = req.query.idPlayer;
 
